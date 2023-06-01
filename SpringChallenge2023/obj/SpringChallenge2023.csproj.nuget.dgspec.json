@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\ELCA Games\\SpringChallenge2023\\SpringChallenge2023\\SpringChallenge2023\\SpringChallenge2023.csproj": {}
+    "C:\\ELCA Games\\SpringChallenge2023\\SpringChallenge2023\\SpringChallenge2023.csproj": {}
   },
   "projects": {
-    "D:\\ELCA Games\\SpringChallenge2023\\SpringChallenge2023\\SpringChallenge2023\\SpringChallenge2023.csproj": {
+    "C:\\ELCA Games\\SpringChallenge2023\\SpringChallenge2023\\SpringChallenge2023.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\ELCA Games\\SpringChallenge2023\\SpringChallenge2023\\SpringChallenge2023\\SpringChallenge2023.csproj",
+        "projectUniqueName": "C:\\ELCA Games\\SpringChallenge2023\\SpringChallenge2023\\SpringChallenge2023.csproj",
         "projectName": "SpringChallenge2023",
-        "projectPath": "D:\\ELCA Games\\SpringChallenge2023\\SpringChallenge2023\\SpringChallenge2023\\SpringChallenge2023.csproj",
+        "projectPath": "C:\\ELCA Games\\SpringChallenge2023\\SpringChallenge2023\\SpringChallenge2023.csproj",
         "packagesPath": "C:\\Users\\phg\\.nuget\\packages\\",
-        "outputPath": "D:\\ELCA Games\\SpringChallenge2023\\SpringChallenge2023\\SpringChallenge2023\\obj\\",
+        "outputPath": "C:\\ELCA Games\\SpringChallenge2023\\SpringChallenge2023\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\phg\\AppData\\Roaming\\NuGet\\NuGet.Config",

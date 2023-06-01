@@ -280,6 +280,14 @@ class Player
         return path.Count - 1;
     }
     
+    public static int GetAnts(int cellIdx, int playerIdx)
+    {
+        if (IsFriendly(playerIdx))
+            return CellsDic[cellIdx].MyAnts;
+        
+        return CellsDic[cellIdx].OppAnts;
+    }
+    
     public static List<Dictionary<int, int>> AttackCache;
     public static int InitialFood = 0;
 
@@ -312,15 +320,7 @@ class Player
 
         AttackCache[playerIdx].Add(cellIdx, maxMin);
         return maxMin;
-    }
-
-    public static int GetAnts(int cellIdx, int playerIdx)
-    {
-        if (IsFriendly(playerIdx))
-            return CellsDic[cellIdx].MyAnts;
-        
-        return CellsDic[cellIdx].OppAnts;
-    }
+    }    
 
     /**
      * @return The path that maximizes the given player score between start and end, while minimizing the distance from start to end.
