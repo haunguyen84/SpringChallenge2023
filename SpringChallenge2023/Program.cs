@@ -28,12 +28,16 @@ class Player
     public static List<int> MyBaseIndexes = new List<int>();
     public static List<int> OppBaseIndexes = new List<int>();
     public static int[,] DistanceCache = new int[100, 100];
+    public static int TotalInitialCrystals = 0;
+    public static int TotalInitialEggs = 0;
+    public static int TotalCrystals = 0;
+    public static int TotalEggs = 0;
+    public static List<int> HasEggCellIndexes = new List<int>();
+    public static List<int> HasCrystalCellIndexes = new List<int>();
 
     static void Main(string[] args)
     {
         string[] inputs;
-        int totalInitialResources = 0;
-        int totalResources = 0;
 
         int numberOfCells = int.Parse(Console.ReadLine()); // amount of hexagonal cells in this map
 
@@ -61,7 +65,11 @@ class Player
             if (neigh5 >= 0) cell.Neighbours.Add(neigh5);
             CellsDic.Add(cell.Index, cell);
 
-            totalInitialResources += initialResources;
+            // Calculate total initial eggs and crystals
+            if (type == 1) // Egg
+                TotalInitialEggs += initialResources;
+            else if (type == 2) // Crystal
+                TotalInitialCrystals += initialResources;
         }
 
         int numberOfBases = int.Parse(Console.ReadLine());
@@ -82,9 +90,13 @@ class Player
 
         while (true)
         {
-            totalResources = 0;
-            List<int> hasResourcesCellIndexes = new List<int>();
+            // Reset
+            TotalCrystals = 0;
+            TotalEggs = 0;
+            HasEggCellIndexes.Clear();
+            HasCrystalCellIndexes.Clear();
 
+            // Process realtime inputs
             for (int i = 0; i < numberOfCells; i++)
             {
                 inputs = Console.ReadLine().Split(' ');
@@ -97,54 +109,81 @@ class Player
                 currentCell.MyAnts = myAnts;
                 currentCell.OppAnts = oppAnts;
 
-                totalResources += resources;
-
-                // Find all cells having resources
-                if (resources > 0)
+                // Find and calculate all cells which has eggs/crystal 
+                if (IsEgg(currentCell.Type) && resources > 0) // Egg
                 {
-                    hasResourcesCellIndexes.Add(i);
+                    TotalEggs += resources;
+                    HasEggCellIndexes.Add(i);
+                }
+                else if (IsCrystal(currentCell.Type) && resources > 0) // Crystal
+                {
+                    TotalCrystals += resources;
+                    HasCrystalCellIndexes.Add(i);
                 }
             }
 
-            // Create a line from our base to all cells having resources
-            foreach (var cellIndex in hasResourcesCellIndexes)
-            {
-                command += $"LINE {MyBaseIndexes[0]} {cellIndex} {defaultWeight};";
-            }
-
-            // Write an action using Console.WriteLine()
-            // To debug: Console.Error.WriteLine("Debug messages...");
-            foreach (var index in MyBaseIndexes)
-            {
-                Print($"myBaseIndex: {index}");
-            }
+            Test();
             
-            foreach (var index in OppBaseIndexes)
-            {
-                Print($"oppBaseIndex: {index}");
-            }
+            // GAME ON :)
             
-            Print($"totalInitialResources: {totalInitialResources}");
-            Print($"totalResources: {totalResources}");
-            
-            // Test FindShortestPath
-            var shortestPath = FindShortestPath(30, 27, MyBaseIndexes[0]);
-            Print($"FindShortestPath: ");
-            PrintPath(shortestPath);
-
-            var distance = GetDistance(5, 50);
-            Print($"GetDistance {distance}");
-            
-            // Test GetBestPath
-            Print($"Start GetBestPath");
-            var bestPath = GetBestPath(5, 50, MyBaseIndexes[0], false);
-            Print($"Found GetBestPath: ");
-            PrintPath(bestPath);
-            Print($"End GetBestPath: ");
-
-            // WAIT | LINE <sourceIdx> <targetIdx> <strength> | BEACON <cellIdx> <strength> | MESSAGE <text>
-            Console.WriteLine(command);
         }
+    }
+
+    public static void Test()
+    {
+        string command = "";
+        int defaultWeight = 1;
+        
+        // Create a line from our base to all cells having resources
+        foreach (var cellIndex in HasEggCellIndexes)
+        {
+            command += $"LINE {MyBaseIndexes[0]} {cellIndex} {defaultWeight};";
+        }
+
+        // Write an action using Console.WriteLine()
+        // To debug: Console.Error.WriteLine("Debug messages...");
+        foreach (var index in MyBaseIndexes)
+        {
+            Print($"myBaseIndex: {index}");
+        }
+            
+        foreach (var index in OppBaseIndexes)
+        {
+            Print($"oppBaseIndex: {index}");
+        }
+            
+        Print($"TotalInitialCrystals: {TotalInitialCrystals}");
+        Print($"TotalCrystals: {TotalCrystals}");
+        Print($"TotalInitialEggs: {TotalInitialEggs}");
+        Print($"TotalEggs: {TotalEggs}");        
+            
+        // Test FindShortestPath
+        var shortestPath = FindShortestPath(30, 27, MyBaseIndexes[0]);
+        Print($"FindShortestPath: ");
+        PrintPath(shortestPath);
+
+        var distance = GetDistance(5, 50);
+        Print($"GetDistance {distance}");
+            
+        // Test GetBestPath
+        Print($"Start GetBestPath");
+        var bestPath = GetBestPath(5, 50, MyBaseIndexes[0], false);
+        Print($"Found GetBestPath: ");
+        PrintPath(bestPath);
+        Print($"End GetBestPath: ");
+
+        // WAIT | LINE <sourceIdx> <targetIdx> <strength> | BEACON <cellIdx> <strength> | MESSAGE <text>
+        Console.WriteLine(command);
+    }
+
+    public static bool IsEgg(int type)
+    {
+        return type == 1;
+    }
+    
+    public static bool IsCrystal(int type)
+    {
+        return type == 2;
     }
 
     public static void Print(string message)
