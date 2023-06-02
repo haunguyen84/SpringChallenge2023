@@ -16,8 +16,8 @@ public class Cell
     public int MyAnts;
     public int OppAnts;
     public int Strength;
-    public Dictionary<int, LinkedList<Cell>> HarvestingPaths = new Dictionary<int, LinkedList<Cell>>();
-    public Dictionary<int, LinkedList<Cell>> AttackingPaths = new Dictionary<int, LinkedList<Cell>>();
+    public Dictionary<int, LinkedList<Cell>> HarvestingPaths = new Dictionary<int, LinkedList<Cell>>(); // key is baseIndex
+    public Dictionary<int, LinkedList<Cell>> AttackingPaths = new Dictionary<int, LinkedList<Cell>>(); // key is baseIndex
 }
 
 public enum CellType
@@ -275,7 +275,8 @@ class Player
                 
                 // Find a new cell to harvest eggs
                 // Ignore if low crystal or already had too many ants :) 
-                DoFindClosestCellHasMaxEggToHarvest(myBaseIndex);
+                // Should extend lines to other eggs if there are already many ants in base
+                DoFindClosestCellsHasMaxEggToHarvest(myBaseIndex);
                 
                 if (Commands[myBaseIndex].Length > 0)
                 {
@@ -619,6 +620,14 @@ class Player
         }
     }
 
+    public static void DoFindClosestCellsHasMaxEggToHarvest(int myBaseIndex)
+    {
+        for (int i = 0; i < HasEggCells.Count; i++)
+        {
+            DoFindClosestCellHasMaxEggToHarvest(myBaseIndex);
+        }
+    }
+
     public static void DoFindClosestCellHasMaxEggToHarvest(int myBaseIndex)
     {
         // Ignore when low crystal left 
@@ -808,7 +817,18 @@ class Player
 
     public static List<Cell> SortByMaxHarvestProductivity(List<Cell> cells, int myBaseIndex)
     {
-        return cells.OrderByDescending(cell =>
+        return cells.Where(cell =>
+            {
+                if (!cell.HarvestingPaths.ContainsKey(myBaseIndex))
+                {
+                    
+                }
+                var harvestingPathsCount = !cell.HarvestingPaths.ContainsKey(myBaseIndex) ? 0 : cell.HarvestingPaths[myBaseIndex].Count;
+                var attackingPathsCount = !cell.AttackingPaths.ContainsKey(myBaseIndex) ? 0 : cell.AttackingPaths[myBaseIndex].Count;
+                
+                return harvestingPathsCount == 0 && attackingPathsCount == 0;
+            })
+            .OrderByDescending(cell =>
         {
             var myMaxAttackPower = GetMyMaxAttackPower(cell, myBaseIndex);
             
