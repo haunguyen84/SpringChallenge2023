@@ -37,7 +37,7 @@ class Player
     public static List<Cell> HasEggCells = new List<Cell>();
     public static List<Cell> HasCrystalCells = new List<Cell>();
     public static Dictionary<int, Dictionary<int, int>> AttackCache = new Dictionary<int, Dictionary<int, int>>();
-    public static Dictionary<int, List<Cell>> MyHarvestingCells = new Dictionary<int, List<Cell>>(); // key is baseIndex
+    public static Dictionary<int, List<Cell>> MyHarvestingCells = new Dictionary<int, List<Cell>>(); // key is baseIndex, value is a list of harvesting cells
     public static Dictionary<int, string> Commands = new Dictionary<int, string>();
 
     static void Main(string[] args)
@@ -235,31 +235,45 @@ class Player
             //Test();
             
             // GAME ON :)
-            
+            Print($"-----------------------------------------------------");
             int defaultWeight = 1;
             
             foreach (var myBaseIndex in MyBaseIndexes)
             {
+                Print($"myBaseIndex {myBaseIndex}");
+                
                 // Reset command
                 Commands[myBaseIndex] = "";
                 
                 // Check if harvesting a cell
-                DoCheckIfHarvesting(myBaseIndex);
+                DoCheckIfHarvesting(myBaseIndex, false);                
 
                 if (Commands[myBaseIndex].Length > 0)
                 {
+                    Print($"-----------------------------------------------------");
                     continue;
                 }
                 
-                // Find a new cell to harvest eggs
-                if (TotalCrystals <= TotalInitialCrystals)
+                // Check if attacking a cell
+                DoCheckIfHarvesting(myBaseIndex, true);
+
+                if (Commands[myBaseIndex].Length > 0)
+                {
+                    Print($"-----------------------------------------------------");
+                    continue;
+                }
+                
+                // Find a new cell to harvest eggs                
+                if (!IsLowCrystal())
                 {
                     DoFindANewEggCellToHarvest(myBaseIndex);  
                 }
                 else
                 {
                     DoFindMaxCrystalCellHarvestingByEnemyToAttack(myBaseIndex);
-                }                
+                }      
+                
+                Print($"-----------------------------------------------------");
             }
             
             DoAllMyCommands();
@@ -270,13 +284,20 @@ class Player
 
     public static void DoFindMaxCrystalCellHarvestingByEnemyToAttack(int myBaseIndex)
     {
+        Print($"Start DoFindMaxCrystalCellHarvestingByEnemyToAttack");
         var attackCell = FindMaxCrystalCellHarvestingByEnemyToAttack(myBaseIndex);
         var attackPath = attackCell.AttackingPaths[myBaseIndex];
+        
+        Print($"Found a cell to attack from {myBaseIndex}: {attackCell.Index}");
 
         if (attackCell != null && attackPath.Count > 0)
         {
             Commands[myBaseIndex] = BuildBeaconCommand(attackPath);
+            MyHarvestingCells[myBaseIndex].Add(attackCell);
+            Print($"attackPath {Commands[myBaseIndex]}");
         }
+        
+        Print($"End DoFindMaxCrystalCellHarvestingByEnemyToAttack");
     }
 
     public static int CountTotalAntsFromBase(int baseIndex)
@@ -325,11 +346,20 @@ class Player
     {
         foreach (var crystalCell in HasCrystalCells)
         {
-            var oppAttackPower = GetAttackPower(crystalCell.Index, OppBaseIndexes[0]);
+            Print($"GetAttackPower {OppBaseIndexes[0]}");
+            var oppAttackPower1 = GetAttackPower(crystalCell.Index, OppBaseIndexes[0]);
+            
+            Print($"GetAttackPower {OppBaseIndexes[1]}");
+            var oppAttackPower2 = GetAttackPower(crystalCell.Index, OppBaseIndexes[1]);
+                        
+            var oppAttackPower = Math.Max(oppAttackPower1, oppAttackPower2);
 
             var shortestPath = FindShortestPathHavingMaxResources(myBaseIndex, crystalCell.Index, myBaseIndex);
             var totalAnts = CountTotalAntsFromBase(myBaseIndex);
             var myAttackPower = totalAnts / (GetDistance(shortestPath) + 1);
+            
+            Print($"totalAnts {totalAnts} GetDistance(shortestPath) {GetDistance(shortestPath)}");
+            Print($"myAttackPower {myAttackPower} oppAttackPower {oppAttackPower}");
 
             // Check if can attack
             if (myAttackPower > oppAttackPower)
@@ -385,41 +415,73 @@ class Player
         }  
     }
 
-    public static void DoCheckIfHarvesting(int myBaseIndex)
+    public static void CheckIfHarvesting(Cell myHarvestingCell, int myBaseIndex, List<Cell> canNotHarvestCells, bool isAttack)
+    {
+        Dictionary<int, LinkedList<Cell>> paths = myHarvestingCell.HarvestingPaths;
+        if (isAttack)
+        {
+            paths = myHarvestingCell.AttackingPaths;
+        }
+        
+        if (paths.ContainsKey(myBaseIndex))
+        {
+            Print($"Checking harvesting cell: {myHarvestingCell.Index}");
+                        
+            var myAttackPower = GetAttackPower(paths[myBaseIndex], myBaseIndex);
+            var oppAttackPower = GetAttackPower(myHarvestingCell.Index, OppBaseIndexes[0]);
+            var currentResource = myHarvestingCell.Resources;
+
+            Print($"myAttackPower {myAttackPower}");
+            Print($"oppAttackPower {oppAttackPower}");
+            Print($"currentResource {currentResource}");
+
+            if (myAttackPower >= oppAttackPower && currentResource > 0)
+            {
+                Print($"Harvesting cell: {myHarvestingCell.Index}");
+                Commands[myBaseIndex] += BuildBeaconCommand(paths[myBaseIndex]);
+                Print($"command {myBaseIndex}: {Commands[myBaseIndex]}");
+            }
+            else
+            {
+                paths.Remove(myBaseIndex);
+                canNotHarvestCells.Add(myHarvestingCell);
+            }
+        }
+    }
+
+    public static bool IsLowCrystal()
+    {
+        Print($"TotalCrystals: {TotalCrystals} TotalInitialCrystals: {TotalInitialCrystals}");
+        return TotalCrystals <= (TotalInitialCrystals * 0.75);
+    }
+
+    public static void DoCheckIfHarvesting(int myBaseIndex, bool isAttack)
     {
         var myHarvestingCells = MyHarvestingCells[myBaseIndex];
         var canNotHarvestCells = new List<Cell>();
+        
+        Print($"DoCheckIfHarvesting myBaseIndex{myBaseIndex} isAttack {isAttack}");
 
         foreach (var myHarvestingCell in myHarvestingCells)
         {
-            if (myHarvestingCell.HarvestingPaths.ContainsKey(myBaseIndex))
+            Print($"myHarvestingCell {myHarvestingCell}");
+            
+            // Check if should stop harvesting eggs
+            if (!isAttack)
             {
-                Print($"Checking harvesting cell: {myHarvestingCell.Index}");
-                        
-                var myAttackPower = GetAttackPower(myHarvestingCell.HarvestingPaths[myBaseIndex], myBaseIndex);
-                var oppAttackPower = GetAttackPower(myHarvestingCell.Index, OppBaseIndexes[0]);
-                var currentResource = myHarvestingCell.Resources;
-
-                Print($"myAttackPower {myAttackPower}");
-                Print($"oppAttackPower {oppAttackPower}");
-                Print($"currentResource {currentResource}");
-
-                if (myAttackPower >= oppAttackPower && currentResource > 0)
+                if (IsLowCrystal())
                 {
-                    Print($"Harvesting cell: {myHarvestingCell.Index}");
-                    Commands[myBaseIndex] += BuildBeaconCommand(myHarvestingCell.HarvestingPaths[myBaseIndex]);
-                    Print($"command {myBaseIndex}: {Commands[myBaseIndex]}");
-                }
-                else
-                {
-                    myHarvestingCell.HarvestingPaths.Remove(myBaseIndex);
                     canNotHarvestCells.Add(myHarvestingCell);
+                    continue;
                 }
             }
+            
+            CheckIfHarvesting(myHarvestingCell, myBaseIndex, canNotHarvestCells, isAttack);
         }
 
         foreach (var canNotHarvestingCell in canNotHarvestCells)
         {
+            Print($"canNotHarvestingCell {canNotHarvestingCell.Index}");
             myHarvestingCells.Remove(canNotHarvestingCell);
         }
     }
@@ -825,8 +887,11 @@ class Player
     {
         int cachedAttackPower = -1;
 
+        Print($"Start GetAttackPower cell {cellIdx} player {playerIdx}");
         if (AttackCache.ContainsKey(playerIdx) && AttackCache[playerIdx].ContainsKey(cellIdx))
         {
+            cachedAttackPower = AttackCache[playerIdx][cellIdx];
+            Print($"GetAttackPower from AttackCache {cachedAttackPower}");
             return cachedAttackPower;
         }
 
@@ -837,8 +902,11 @@ class Player
             anthills = OppBaseIndexes;
 
         List<LinkedList<Cell>> allPaths = new List<LinkedList<Cell>>();
-        foreach (int anthill in anthills) {
+        foreach (int anthill in anthills) 
+        {
             LinkedList<Cell> bestPath = GetBestPath(cellIdx, anthill, playerIdx, false);
+            
+            PrintPath(bestPath);
 
             if (bestPath != null) {
                 allPaths.Add(bestPath);
@@ -859,6 +927,9 @@ class Player
             AttackCache.Add(playerIdx, new Dictionary<int, int>());
         }
         AttackCache[playerIdx].Add(cellIdx, maxMin);
+        
+        Print($"End GetAttackPower cell {cellIdx} player {playerIdx}");
+        
         return maxMin;
     }    
 
@@ -894,10 +965,13 @@ class Player
         };
 
         PriorityQueue<int, int> queue = new PriorityQueue<int, int>(Comparer<int>.Create(valueDistanceComparison));
+        
         maxPathValues[start] = GetAnts(start, playerIdx);
-        Print($"GetAnts(start, playerIdx) {maxPathValues[start]}");
         distanceFromStart[start] = 0;
         int startAnts = GetAnts(start, playerIdx);
+        
+        //Print($"GetAnts(start, playerIdx) {maxPathValues[start]}");
+        
         if (interruptedByFight) {
             int myForce = GetAttackPower(start, playerIdx);
             int otherForce = GetAttackPower(start, OppBaseIndexes[0]);
@@ -909,36 +983,47 @@ class Player
             queue.Enqueue(start, start);
         }
 
-        Print($"queue.Count {queue.Count}");
+        //Print($"queue.Count {queue.Count}");
         while (queue.Count > 0 && !visited[end]) {
             int currentIndex = queue.Dequeue();
-            Print($"currentIndex {currentIndex}");
+            //Print($"currentIndex {currentIndex}");
             visited[currentIndex] = true;
 
             // Update the max values of the neighbors
-            Print($"CellsDic[currentIndex].Neighbours {CellsDic[currentIndex].Neighbours.Count}");
-            foreach (int neighborIndex in CellsDic[currentIndex].Neighbours) {
+            //Print($"CellsDic[currentIndex].Neighbours {CellsDic[currentIndex].Neighbours.Count}");
+            
+            foreach (int neighborIndex in CellsDic[currentIndex].Neighbours) 
+            {
                 int neighborAnts = GetAnts(neighborIndex, playerIdx);
-                Print($"neighborAnts {neighborAnts}");
-                if (neighborAnts > 0) {
-                    if (interruptedByFight) {
+                //Print($"neighborAnts {neighborAnts}");
+                
+                if (neighborAnts > 0) 
+                {
+                    if (interruptedByFight) 
+                    {
                         int myForce = GetAttackPower(neighborIndex, playerIdx);
                         int otherForce = GetAttackPower(neighborIndex, 1 - playerIdx);
-                        if (otherForce > myForce) {
+                        
+                        if (otherForce > myForce) 
+                        {
                             neighborAnts = 0;
                         }
                     }
                 }
 
-                if (!visited[neighborIndex] && neighborAnts > 0) {
+                if (!visited[neighborIndex] && neighborAnts > 0) 
+                {
                     int potentialMaxPathValue = Math.Min(maxPathValues[currentIndex], neighborAnts);
-                    Print($"potentialMaxPathValue {potentialMaxPathValue}");
-                    if (potentialMaxPathValue > maxPathValues[neighborIndex]) {
+                    //Print($"potentialMaxPathValue {potentialMaxPathValue}");
+                    
+                    if (potentialMaxPathValue > maxPathValues[neighborIndex]) 
+                    {
                         maxPathValues[neighborIndex] = potentialMaxPathValue;
                         distanceFromStart[neighborIndex] = distanceFromStart[currentIndex] + 1;
                         prev[neighborIndex] = currentIndex;
+                        
                         queue.Enqueue(neighborIndex, neighborIndex);
-                        Print($"queue.Enqueue(neighborIndex, neighborIndex) {neighborIndex}");
+                        //Print($"queue.Enqueue(neighborIndex, neighborIndex) {neighborIndex}");
                     }
                 }
             }
@@ -952,10 +1037,10 @@ class Player
         // Compute the path from start to end
         LinkedList<Cell> path = new LinkedList<Cell>();
         int index = end;
-        Print($"Compute the path from start to end {end}");
+        //Print($"Compute the path from start to end {end}");
         while (index != -1) {
             path.AddFirst(CellsDic[index]);
-            Print($"path.AddFirst {index}");
+            //Print($"path.AddFirst {index}");
             index = prev[index];
         }
         return path;
