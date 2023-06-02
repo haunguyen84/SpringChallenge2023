@@ -1,0 +1,15 @@
+C:\ELCA Games\SpringChallenge2023\SpringChallenge2023\bin\Debug\net6.0\SpringChallenge2023.exe
+C:\ELCA Games\SpringChallenge2023\SpringChallenge2023\bin\Debug\net6.0\SpringChallenge2023.deps.json
+C:\ELCA Games\SpringChallenge2023\SpringChallenge2023\bin\Debug\net6.0\SpringChallenge2023.runtimeconfig.json
+C:\ELCA Games\SpringChallenge2023\SpringChallenge2023\bin\Debug\net6.0\SpringChallenge2023.dll
+C:\ELCA Games\SpringChallenge2023\SpringChallenge2023\bin\Debug\net6.0\SpringChallenge2023.pdb
+C:\ELCA Games\SpringChallenge2023\SpringChallenge2023\obj\Debug\net6.0\SpringChallenge2023.csproj.AssemblyReference.cache
+C:\ELCA Games\SpringChallenge2023\SpringChallenge2023\obj\Debug\net6.0\SpringChallenge2023.GeneratedMSBuildEditorConfig.editorconfig
+C:\ELCA Games\SpringChallenge2023\SpringChallenge2023\obj\Debug\net6.0\SpringChallenge2023.AssemblyInfoInputs.cache
+C:\ELCA Games\SpringChallenge2023\SpringChallenge2023\obj\Debug\net6.0\SpringChallenge2023.AssemblyInfo.cs
+C:\ELCA Games\SpringChallenge2023\SpringChallenge2023\obj\Debug\net6.0\SpringChallenge2023.csproj.CoreCompileInputs.cache
+C:\ELCA Games\SpringChallenge2023\SpringChallenge2023\obj\Debug\net6.0\SpringChallenge2023.dll
+C:\ELCA Games\SpringChallenge2023\SpringChallenge2023\obj\Debug\net6.0\refint\SpringChallenge2023.dll
+C:\ELCA Games\SpringChallenge2023\SpringChallenge2023\obj\Debug\net6.0\SpringChallenge2023.pdb
+C:\ELCA Games\SpringChallenge2023\SpringChallenge2023\obj\Debug\net6.0\SpringChallenge2023.genruntimeconfig.cache
+C:\ELCA Games\SpringChallenge2023\SpringChallenge2023\obj\Debug\net6.0\ref\SpringChallenge2023.dll
