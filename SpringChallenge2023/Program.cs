@@ -20,6 +20,13 @@ public class Cell
     public Dictionary<int, LinkedList<Cell>> AttackingPaths = new Dictionary<int, LinkedList<Cell>>();
 }
 
+public enum CellType
+{
+    Empty = 0,
+    Egg = 1,
+    Crystal = 2
+}
+
 /**
  * Auto-generated code below aims at helping you parse
  * the standard input according to the problem statement.
@@ -301,6 +308,13 @@ class Player
                 }
                 
                 // Try to harvest richest crystal cell
+                DoFindClosestCellHasMaxCrystalToHarvest(myBaseIndex);
+                
+                if (Commands[myBaseIndex].Length > 0)
+                {
+                    Print($"-----------------------------------------------------");
+                    continue;
+                }
                 
                 // Try to harvest richest egg cell
                 
@@ -489,6 +503,41 @@ class Player
 
         return false;
     }
+    
+    public static void DoFindClosestCellHasMaxCrystalToHarvest(int myBaseIndex)
+    {
+        var myHarvestingCells = MyHarvestingCells[myBaseIndex];
+        var closestCellHasMaxResourceIndex = FindClosestCellHasMaxResources(myBaseIndex, myBaseIndex, CellType.Crystal);
+        var closestCellHasMaxResource = CellsDic[closestCellHasMaxResourceIndex];
+        
+        Print($"FindClosestCellHasMaxEgg from {myBaseIndex} is {closestCellHasMaxResourceIndex}");
+
+        if (closestCellHasMaxResourceIndex > -1)
+        {
+            var path = FindShortestPathHavingMaxResources(myBaseIndex, closestCellHasMaxResourceIndex, myBaseIndex);
+
+            var myAttackPower = GetAttackPower(path, myBaseIndex);
+            var oppAttackPower = GetAttackPower(closestCellHasMaxResourceIndex, OppBaseIndexes[0]);
+            var currentResource = CellsDic[closestCellHasMaxResourceIndex].Resources;
+                    
+            Print($"myAttackPower {myAttackPower} oppAttackPower {oppAttackPower}");
+            Print($"closestCellHasMaxResourceIndex {closestCellHasMaxResourceIndex} currentResource {currentResource}");
+
+            if (myAttackPower >= oppAttackPower && currentResource > 0)
+            {
+                Print($"Found new HarvestingPath for {myBaseIndex}: {BuildBeaconCommand(path)}");
+                        
+                closestCellHasMaxResource.HarvestingPaths.Add(myBaseIndex, path);
+
+                if (!myHarvestingCells.Contains(closestCellHasMaxResource))
+                {
+                    myHarvestingCells.Add(closestCellHasMaxResource);
+                }
+                        
+                Commands[myBaseIndex] += BuildBeaconCommand(path);
+            }                    
+        }  
+    }
 
     public static void DoFindClosestCellHasMaxEggToHarvest(int myBaseIndex)
     {
@@ -505,7 +554,7 @@ class Player
         }
 
         var myHarvestingCells = MyHarvestingCells[myBaseIndex];
-        var closestCellHasMaxEggIndex = FindClosestCellHasMaxEgg(myBaseIndex, myBaseIndex);
+        var closestCellHasMaxEggIndex = FindClosestCellHasMaxResources(myBaseIndex, myBaseIndex, CellType.Egg);
         var closestCellHasMaxEgg = CellsDic[closestCellHasMaxEggIndex];
         Print($"FindClosestCellHasMaxEgg from {myBaseIndex} is {closestCellHasMaxEggIndex}");
 
@@ -517,9 +566,8 @@ class Player
             var oppAttackPower = GetAttackPower(closestCellHasMaxEggIndex, OppBaseIndexes[0]);
             var currentResource = CellsDic[closestCellHasMaxEggIndex].Resources;
                     
-            Print($"myAttackPower {myAttackPower}");
-            Print($"oppAttackPower {oppAttackPower}");
-            Print($"currentResource {currentResource}");
+            Print($"myAttackPower {myAttackPower} oppAttackPower {oppAttackPower}");
+            Print($"closestCellHasMaxEggIndex {closestCellHasMaxEggIndex} currentResource {currentResource}");
 
             if (myAttackPower >= oppAttackPower && currentResource > 0)
             {
@@ -547,21 +595,20 @@ class Player
         
         if (paths.ContainsKey(myBaseIndex))
         {
-            Print($"Checking harvesting cell: {myHarvestingCell.Index}");
+            Print($"--- Checking harvesting cell: {myHarvestingCell.Index}");
                         
             var myAttackPower = GetMyMaxAttackPower(myHarvestingCell, myBaseIndex);
             var oppAttackPower = GetAttackPower(myHarvestingCell.Index, OppBaseIndexes[0]);
             var currentResource = myHarvestingCell.Resources;
 
-            Print($"myAttackPower {myAttackPower}");
-            Print($"oppAttackPower {oppAttackPower}");
-            Print($"currentResource {currentResource}");
+            Print($"myAttackPower {myAttackPower} oppAttackPower {oppAttackPower}");
+            Print($"myHarvestingCell {myHarvestingCell.Index} currentResource {currentResource}");
 
             if (myAttackPower >= oppAttackPower && currentResource > 0)
             {
                 Print($"Harvesting cell: {myHarvestingCell.Index}");
                 Commands[myBaseIndex] += BuildBeaconCommand(paths[myBaseIndex]);
-                Print($"command {myBaseIndex}: {Commands[myBaseIndex]}");
+                //Print($"command {myBaseIndex}: {Commands[myBaseIndex]}");
             }
             else
             {
@@ -598,7 +645,7 @@ class Player
             Print($"myHarvestingCell {myHarvestingCell.Index}");
             
             // Check if should stop harvesting eggs
-            if (!isAttack)
+            if (!isAttack && IsEgg(myHarvestingCell.Type))
             {
                 if (IsLowCrystal(LowCrystalRatio) || CheckIfHaveTooMuchAnts(myBaseIndex))
                 {
@@ -652,30 +699,41 @@ class Player
         return command;
     }
 
-    public static int FindClosestCellHasMaxEgg(int fromIdx, int playerIdx)
+    public static int FindClosestCellHasMaxResources(int fromIdx, int playerIdx, CellType type)
     {
-        // Sort Eggs DESC
-        HasEggCells.Sort((cell1, cell2) => cell2.Resources.CompareTo(cell1.Resources));
+        List<Cell> resourceCells;
+
+        if (IsEgg(type))
+        {
+            resourceCells = HasEggCells.OrderByDescending(cell => cell.Resources).ToList();
+        }
+        else
+        {
+            resourceCells = HasCrystalCells.OrderByDescending(cell => cell.Resources).ToList();
+        }
         
-        var maxEgg = int.MinValue;
+        // Sort Eggs DESC
+        resourceCells.Sort((cell1, cell2) => cell2.Resources.CompareTo(cell1.Resources));
+        
+        var maxResource = int.MinValue;
         var minDistance = int.MaxValue;
         var desiredIndex = -1;
         
-        foreach (var eggCell in HasEggCells)
+        foreach (var resourceCell in resourceCells)
         {
-            if (maxEgg <= eggCell.Resources)
+            if (maxResource <= resourceCell.Resources)
             {
-                var path = FindShortestPath(fromIdx, eggCell.Index, playerIdx);
+                var path = FindShortestPath(fromIdx, resourceCell.Index, playerIdx);
                 var distance = GetDistance(path);
 
                 // Check if enough ants to go there
                 if (CheckIfEnoughAntsToGo(path, playerIdx) && minDistance > distance)
                 {
-                    desiredIndex = eggCell.Index;
+                    desiredIndex = resourceCell.Index;
                     minDistance = distance;
                 }
 
-                maxEgg = eggCell.Resources;
+                maxResource = resourceCell.Resources;
             }
             else
             {
@@ -769,10 +827,20 @@ class Player
         // WAIT | LINE <sourceIdx> <targetIdx> <strength> | BEACON <cellIdx> <strength> | MESSAGE <text>
         Console.WriteLine(command);
     }
+    
+    public static bool IsEgg(CellType type)
+    {
+        return (int)type == 1;
+    }
 
     public static bool IsEgg(int type)
     {
         return type == 1;
+    }
+    
+    public static bool IsCrystal(CellType type)
+    {
+        return (int)type == 2;
     }
     
     public static bool IsCrystal(int type)
