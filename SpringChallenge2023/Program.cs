@@ -40,52 +40,60 @@ class Player
     public static Dictionary<int, List<Cell>> MyHarvestingCells = new Dictionary<int, List<Cell>>(); // key is baseIndex, value is a list of harvesting cells
     public static Dictionary<int, List<Cell>> MyAttackingCells = new Dictionary<int, List<Cell>>(); // key is baseIndex, value is a list of attacking cells
     public static Dictionary<int, string> Commands = new Dictionary<int, string>();
+    
+    // Game settings
+    public static double LowCrystalRatio = 0.7;
+    public static double HaveManyAntsRatio = 1.5;
 
     static void Main(string[] args)
     {
         string[] inputs;
 
-        int numberOfCells = 35; 
+        int numberOfCells = 39; 
         numberOfCells = int.Parse(Console.ReadLine()); // amount of hexagonal cells in this map
         Print($"numberOfCells {numberOfCells}");
 
         List<string> dumpInputInitialStr = new List<string>()
         {
-            "0 0 1 3 5 2 4 6",
-            "2 42 -1 7 3 0 6 -1",
-            "2 42 0 5 -1 -1 8 4",
-            "0 0 7 9 11 5 0 1",
-            "0 0 6 0 2 8 10 12",
-            "0 0 3 11 13 -1 2 0",
-            "0 0 -1 1 0 4 12 14",
-            "0 0 17 19 9 3 1 -1",
-            "0 0 4 2 -1 18 20 10",
-            "1 10 19 -1 -1 11 3 7",
-            "1 10 12 4 8 20 -1 -1",
-            "0 0 9 -1 -1 13 5 3",
-            "0 0 14 6 4 10 -1 -1",
-            "0 0 11 -1 -1 21 -1 5",
-            "0 0 22 -1 6 12 -1 -1",
-            "2 50 25 27 17 -1 24 34",
-            "2 50 -1 23 33 26 28 18",
-            "0 0 27 29 19 7 -1 15",
-            "0 0 8 -1 16 28 30 20",
-            "0 0 29 -1 -1 9 7 17",
-            "0 0 10 8 18 30 -1 -1",
-            "2 18 13 -1 -1 31 23 -1",
-            "2 18 32 24 -1 14 -1 -1",
-            "0 0 -1 21 31 33 16 -1",
-            "0 0 34 15 -1 -1 22 32",
-            "0 0 -1 -1 27 15 34 -1",
-            "0 0 16 33 -1 -1 -1 28",
-            "2 7 -1 -1 29 17 15 25",
-            "2 7 18 16 26 -1 -1 30",
-            "1 13 -1 -1 -1 19 17 27",
-            "1 13 20 18 28 -1 -1 -1",
-            "0 0 21 -1 -1 -1 33 23",
-            "0 0 -1 34 24 22 -1 -1",
-            "0 0 23 31 -1 -1 26 16",
-            "0 0 -1 25 15 24 32 -1"
+            "0 0 1 -1 3 2 -1 4",
+            "0 0 5 7 -1 0 4 14",
+            "0 0 0 3 13 6 8 -1",
+            "2 14 -1 11 -1 13 2 0",
+            "2 14 14 1 0 -1 12 -1",
+            "1 12 15 -1 7 1 14 22",
+            "1 12 2 13 21 16 -1 8",
+            "0 0 -1 17 9 -1 1 5",
+            "0 0 -1 2 6 -1 18 10",
+            "1 38 17 -1 -1 11 -1 7",
+            "1 38 12 -1 8 18 -1 -1",
+            "1 39 9 -1 -1 -1 3 -1",
+            "1 39 -1 4 -1 10 -1 -1",
+            "0 0 3 -1 19 21 6 2",
+            "0 0 22 5 1 4 -1 20",
+            "0 0 23 25 -1 5 22 30",
+            "0 0 6 21 29 24 26 -1",
+            "2 45 27 -1 -1 9 7 -1",
+            "2 45 10 8 -1 28 -1 -1",
+            "0 0 -1 -1 -1 -1 21 13",
+            "0 0 -1 22 14 -1 -1 -1",
+            "0 0 13 19 -1 29 16 6",
+            "0 0 30 15 5 14 20 -1",
+            "0 0 31 -1 25 15 30 38",
+            "0 0 16 29 37 32 -1 26",
+            "0 0 -1 33 27 -1 15 23",
+            "0 0 -1 16 24 -1 34 28",
+            "0 0 33 -1 -1 17 -1 25",
+            "0 0 18 -1 26 34 -1 -1",
+            "2 41 21 -1 35 37 24 16",
+            "2 41 38 23 15 22 -1 36",
+            "2 8 -1 -1 -1 23 38 -1",
+            "2 8 24 37 -1 -1 -1 -1",
+            "0 0 -1 -1 -1 27 25 -1",
+            "0 0 28 26 -1 -1 -1 -1",
+            "0 0 -1 -1 -1 -1 37 29",
+            "0 0 -1 38 30 -1 -1 -1",
+            "0 0 29 35 -1 -1 32 24",
+            "0 0 -1 31 23 30 36 -1"
         };
 
         for (int i = 0; i < numberOfCells; i++)
@@ -124,11 +132,12 @@ class Player
                 TotalInitialCrystals += initialResources;
         }
 
-        int numberOfBases = 2; 
+        int numberOfBases = 1; 
         numberOfBases = int.Parse(Console.ReadLine());
 
-        var myBaseInputStr = "7 31"; 
+        var myBaseInputStr = "33"; 
         myBaseInputStr = Console.ReadLine();
+        
         Print($"mybaseInputStr: {myBaseInputStr}");
         
         inputs = myBaseInputStr.Split(' ');
@@ -141,8 +150,9 @@ class Player
             Commands.Add(idx, "");
         }
 
-        var oppBaseInputStr = "8 32"; 
+        var oppBaseInputStr = "34"; 
         oppBaseInputStr = Console.ReadLine();
+        
         Print($"oppBaseInputStr: {oppBaseInputStr}");
         
         inputs = oppBaseInputStr.Split(' ');
@@ -156,38 +166,42 @@ class Player
         List<string> dumpInputLoopStr = new List<string>()
         {
             "0 0 0",
-            "42 0 0",
-            "42 0 0",
+            "0 0 0",
+            "0 0 0",
+            "14 0 0",
+            "14 0 0",
+            "12 0 0",
+            "12 0 0",
+            "0 0 0",
+            "0 0 0",
+            "38 0 0",
+            "38 0 0",
+            "39 0 0",
+            "39 0 0",
             "0 0 0",
             "0 0 0",
             "0 0 0",
             "0 0 0",
-            "0 14 0",
-            "0 0 14",
-            "10 0 0",
-            "10 0 0",
+            "45 0 0",
+            "45 0 0",
             "0 0 0",
             "0 0 0",
             "0 0 0",
             "0 0 0",
-            "50 0 0",
-            "50 0 0",
             "0 0 0",
             "0 0 0",
             "0 0 0",
             "0 0 0",
-            "18 0 0",
-            "18 0 0",
             "0 0 0",
             "0 0 0",
+            "41 0 0",
+            "41 0 0",
+            "8 0 0",
+            "8 0 0",
+            "0 10 0",
+            "0 0 10",
             "0 0 0",
             "0 0 0",
-            "7 0 0",
-            "7 0 0",
-            "13 0 0",
-            "13 0 0",
-            "0 14 0",
-            "0 0 14",
             "0 0 0",
             "0 0 0"
         };
@@ -267,15 +281,33 @@ class Player
                     continue;
                 }
                 
-                // Find a new cell to harvest eggs                
-                if (!IsLowCrystal())
+                // Find a new cell to harvest eggs
+                // Ignore if low crystal or already had too many ants :) 
+                DoFindClosestCellHasMaxEggToHarvest(myBaseIndex);
+                
+                if (Commands[myBaseIndex].Length > 0)
                 {
-                    DoFindANewEggCellToHarvest(myBaseIndex);  
+                    Print($"-----------------------------------------------------");
+                    continue;
                 }
-                else
+                
+                // Find a resource cell being harvested by enemy 
+                DoFindMaxCrystalCellHarvestingByEnemyToAttack(myBaseIndex);                      
+                
+                if (Commands[myBaseIndex].Length > 0)
                 {
-                    DoFindMaxCrystalCellHarvestingByEnemyToAttack(myBaseIndex);
-                }      
+                    Print($"-----------------------------------------------------");
+                    continue;
+                }
+                
+                // Try to harvest richest crystal cell
+                
+                // Try to harvest richest egg cell
+                
+                // Try to create a surrounded barrier of enemy bases  
+                
+                // Do nothing
+                Commands[myBaseIndex] += "WAIT"; 
                 
                 Print($"-----------------------------------------------------");
             }
@@ -291,6 +323,8 @@ class Player
         Print($"Start DoFindMaxCrystalCellHarvestingByEnemyToAttack");
         
         var attackCell = FindMaxCrystalCellHarvestingByEnemyToAttack(myBaseIndex);
+        if (attackCell == null) return;
+        
         var attackPath = attackCell.AttackingPaths[myBaseIndex];
         
         Print($"Found a cell to attack from {myBaseIndex}: {attackCell.Index}");
@@ -314,22 +348,30 @@ class Player
         List<int> visitedIndexes = new List<int>();
         visitedIndexes.Add(baseIndex);
 
-        CountAnts(baseIndex, visitedIndexes, ref totalAnts);
+        CountAnts(baseIndex, visitedIndexes, ref totalAnts, baseIndex);
 
         return totalAnts;
     }
 
-    public static void CountAnts(int idx, List<int> visitedIndexes, ref int totalAnts)
+    public static void CountAnts(int idx, List<int> visitedIndexes, ref int totalAnts, int baseIndex)
     {
         var cell = CellsDic[idx];
-        totalAnts += cell.MyAnts;
+        
+        if (IsFriendly(baseIndex))
+            totalAnts += cell.MyAnts;
+        else
+            totalAnts += cell.OppAnts;
+        
         visitedIndexes.Add(idx);
 
         var totalAntsInNeighbours = cell.Neighbours.Sum(idx =>
         {
             if (!visitedIndexes.Contains(idx))
             {
-                return CellsDic[idx].MyAnts;
+                if (IsFriendly(baseIndex))
+                    return CellsDic[idx].MyAnts;
+                else
+                    return CellsDic[idx].OppAnts;
             }
             return 0;
         });
@@ -343,7 +385,7 @@ class Player
         {
             if (!visitedIndexes.Contains(neighbour))
             {                
-                CountAnts(neighbour, visitedIndexes, ref totalAnts);
+                CountAnts(neighbour, visitedIndexes, ref totalAnts, baseIndex);
             }
         }
     }
@@ -369,12 +411,21 @@ class Player
         return myAttackPower;
     }
 
-    public static void SortResourceCellsByMyMaxAttackPowerDesc(List<Cell> cells, int myBaseIndex)
+    public static List<Cell> SortResourceCellsByMyMaxAttackPowerDesc(List<Cell> cells, int myBaseIndex)
     {
-        cells.Sort((cell1, cell2) =>
+        var result = cells.OrderByDescending(cell =>
         {
-            return GetMyMaxAttackPower(cell2, myBaseIndex).CompareTo(GetMyMaxAttackPower(cell1, myBaseIndex));
+            var oppAttackPower = GetAttackPower(cell.Index, OppBaseIndexes[0]);
+            var shorestDistance = GetDistance(cell.Index, myBaseIndex);
+
+            return cell.Resources * oppAttackPower / shorestDistance;
+        })
+        .ThenByDescending(cell =>
+        {
+            return GetMyMaxAttackPower(cell, myBaseIndex);
         });
+
+        return result.ToList();
     }
 
     public static Cell FindMaxCrystalCellHarvestingByEnemyToAttack(int myBaseIndex)
@@ -421,8 +472,38 @@ class Player
         return null;
     }
 
-    public static void DoFindANewEggCellToHarvest(int myBaseIndex)
+    public static bool CheckIfHaveTooMuchAnts(int myBaseIndex)
     {
+        var totalAnts = CountTotalAntsFromBase(myBaseIndex);
+        foreach (var oppBaseIndex in OppBaseIndexes)
+        {
+            var totalOppAnts = CountTotalAntsFromBase(oppBaseIndex);
+            
+            Print($"CountTotalAntsFromBase myBaseIndex: {myBaseIndex}: {totalAnts} - oppBaseIndex {oppBaseIndex}: {totalOppAnts}");
+
+            if (totalAnts >= totalOppAnts * HaveManyAntsRatio)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static void DoFindClosestCellHasMaxEggToHarvest(int myBaseIndex)
+    {
+        // Ignore when low crystal left 
+        if (IsLowCrystal(LowCrystalRatio))
+        {
+            return;
+        }
+        
+        // Ignore when already have too many ants :) 
+        if (CheckIfHaveTooMuchAnts(myBaseIndex))
+        {
+            return;
+        }
+
         var myHarvestingCells = MyHarvestingCells[myBaseIndex];
         var closestCellHasMaxEggIndex = FindClosestCellHasMaxEgg(myBaseIndex, myBaseIndex);
         var closestCellHasMaxEgg = CellsDic[closestCellHasMaxEggIndex];
@@ -490,10 +571,10 @@ class Player
         }
     }
 
-    public static bool IsLowCrystal()
+    public static bool IsLowCrystal(double ratio)
     {
-        Print($"TotalCrystals: {TotalCrystals} TotalInitialCrystals: {TotalInitialCrystals}");
-        return TotalCrystals <= (TotalInitialCrystals * 0.75);
+        Print($"Check IsLowCrystal: {TotalCrystals <= (TotalInitialCrystals * ratio)}");
+        return TotalCrystals <= (TotalInitialCrystals * ratio);
     }
 
     public static void DoCheckIfHarvesting(int myBaseIndex, bool isAttack)
@@ -519,7 +600,7 @@ class Player
             // Check if should stop harvesting eggs
             if (!isAttack)
             {
-                if (IsLowCrystal())
+                if (IsLowCrystal(LowCrystalRatio) || CheckIfHaveTooMuchAnts(myBaseIndex))
                 {
                     canNotHarvestCells.Add(myHarvestingCell);
                     continue;
@@ -611,9 +692,16 @@ class Player
     {
         StringBuilder commandBuilder = new StringBuilder();
 
+        var weight = 1;
+        var i = 0;
+
         foreach (var cell in path)
         {
-            commandBuilder.Append($"BEACON {cell.Index} 1;");
+            //if (i == path.Count - 1) weight = 2;
+            
+            commandBuilder.Append($"BEACON {cell.Index} {weight};");
+            
+            i++;
         }
 
         return commandBuilder.ToString();
