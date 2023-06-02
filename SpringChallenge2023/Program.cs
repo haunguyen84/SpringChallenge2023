@@ -33,7 +33,7 @@ public enum CellType
  **/
 class Player
 {
-    public static Dictionary<int, Cell> CellsDic = new Dictionary<int, Cell>();
+    public static Dictionary<int, Cell> CellsDict = new Dictionary<int, Cell>();
     public static List<int> MyBaseIndexes = new List<int>();
     public static List<int> OppBaseIndexes = new List<int>();
     public static int[,] DistanceCache = new int[100, 100];
@@ -49,58 +49,53 @@ class Player
     public static Dictionary<int, string> Commands = new Dictionary<int, string>();
     
     // Game settings
-    public static double LowCrystalRatio = 0.7;
-    public static double HaveManyAntsRatio = 1.5;
+    public static double LowCrystalRatio = 0.5;
+    public static double LowEggRatio = 0.5;
+    public static double HaveManyAntsRatio = 1.7;
 
     static void Main(string[] args)
     {
         string[] inputs;
 
-        int numberOfCells = 39; 
+        int numberOfCells = 33; 
         numberOfCells = int.Parse(Console.ReadLine()); // amount of hexagonal cells in this map
         Print($"numberOfCells {numberOfCells}");
 
         List<string> dumpInputInitialStr = new List<string>()
         {
-            "0 0 1 -1 3 2 -1 4",
-            "0 0 5 7 -1 0 4 14",
-            "0 0 0 3 13 6 8 -1",
-            "2 14 -1 11 -1 13 2 0",
-            "2 14 14 1 0 -1 12 -1",
-            "1 12 15 -1 7 1 14 22",
-            "1 12 2 13 21 16 -1 8",
-            "0 0 -1 17 9 -1 1 5",
-            "0 0 -1 2 6 -1 18 10",
-            "1 38 17 -1 -1 11 -1 7",
-            "1 38 12 -1 8 18 -1 -1",
-            "1 39 9 -1 -1 -1 3 -1",
-            "1 39 -1 4 -1 10 -1 -1",
-            "0 0 3 -1 19 21 6 2",
-            "0 0 22 5 1 4 -1 20",
-            "0 0 23 25 -1 5 22 30",
-            "0 0 6 21 29 24 26 -1",
-            "2 45 27 -1 -1 9 7 -1",
-            "2 45 10 8 -1 28 -1 -1",
-            "0 0 -1 -1 -1 -1 21 13",
-            "0 0 -1 22 14 -1 -1 -1",
-            "0 0 13 19 -1 29 16 6",
-            "0 0 30 15 5 14 20 -1",
-            "0 0 31 -1 25 15 30 38",
-            "0 0 16 29 37 32 -1 26",
-            "0 0 -1 33 27 -1 15 23",
-            "0 0 -1 16 24 -1 34 28",
-            "0 0 33 -1 -1 17 -1 25",
-            "0 0 18 -1 26 34 -1 -1",
-            "2 41 21 -1 35 37 24 16",
-            "2 41 38 23 15 22 -1 36",
-            "2 8 -1 -1 -1 23 38 -1",
-            "2 8 24 37 -1 -1 -1 -1",
-            "0 0 -1 -1 -1 27 25 -1",
-            "0 0 28 26 -1 -1 -1 -1",
-            "0 0 -1 -1 -1 -1 37 29",
-            "0 0 -1 38 30 -1 -1 -1",
-            "0 0 29 35 -1 -1 32 24",
-            "0 0 -1 31 23 30 36 -1"
+            "2 54 1 3 -1 2 4 -1",
+            "1 27 5 7 3 0 -1 -1",
+            "1 27 0 -1 -1 6 8 4",
+            "0 0 7 9 11 -1 0 1",
+            "0 0 -1 0 2 8 10 12",
+            "0 0 15 -1 7 1 -1 22",
+            "0 0 2 -1 21 16 -1 8",
+            "0 0 -1 17 9 3 1 5",
+            "0 0 4 2 6 -1 18 10",
+            "0 0 17 -1 -1 11 3 7",
+            "0 0 12 4 8 18 -1 -1",
+            "0 0 9 -1 -1 13 -1 3",
+            "0 0 14 -1 4 10 -1 -1",
+            "0 0 11 -1 -1 19 -1 -1",
+            "0 0 20 -1 -1 12 -1 -1",
+            "0 0 23 25 -1 5 22 32",
+            "0 0 6 21 31 24 26 -1",
+            "0 0 27 -1 -1 9 7 -1",
+            "0 0 10 8 -1 28 -1 -1",
+            "0 0 13 -1 -1 29 21 -1",
+            "0 0 30 22 -1 14 -1 -1",
+            "0 0 -1 19 29 31 16 6",
+            "0 0 32 15 5 -1 20 30",
+            "2 44 -1 -1 25 15 32 -1",
+            "2 44 16 31 -1 -1 -1 26",
+            "0 0 -1 -1 27 -1 15 23",
+            "0 0 -1 16 24 -1 -1 28",
+            "1 35 -1 -1 -1 17 -1 25",
+            "1 35 18 -1 26 -1 -1 -1",
+            "0 0 19 -1 -1 -1 31 21",
+            "0 0 -1 32 22 20 -1 -1",
+            "2 18 21 29 -1 -1 24 16",
+            "2 18 -1 23 15 22 30 -1"
         };
 
         for (int i = 0; i < numberOfCells; i++)
@@ -130,7 +125,7 @@ class Player
             if (neigh3 >= 0) cell.Neighbours.Add(neigh3);
             if (neigh4 >= 0) cell.Neighbours.Add(neigh4);
             if (neigh5 >= 0) cell.Neighbours.Add(neigh5);
-            CellsDic.Add(cell.Index, cell);
+            CellsDict.Add(cell.Index, cell);
 
             // Calculate total initial eggs and crystals
             if (type == 1) // Egg
@@ -139,10 +134,10 @@ class Player
                 TotalInitialCrystals += initialResources;
         }
 
-        int numberOfBases = 1; 
+        int numberOfBases = 2; 
         numberOfBases = int.Parse(Console.ReadLine());
 
-        var myBaseInputStr = "33"; 
+        var myBaseInputStr = "10 20"; 
         myBaseInputStr = Console.ReadLine();
         
         Print($"mybaseInputStr: {myBaseInputStr}");
@@ -157,7 +152,7 @@ class Player
             Commands.Add(idx, "");
         }
 
-        var oppBaseInputStr = "34"; 
+        var oppBaseInputStr = "9 19"; 
         oppBaseInputStr = Console.ReadLine();
         
         Print($"oppBaseInputStr: {oppBaseInputStr}");
@@ -172,45 +167,39 @@ class Player
 
         List<string> dumpInputLoopStr = new List<string>()
         {
-            "0 0 0",
-            "0 0 0",
-            "0 0 0",
-            "14 0 0",
-            "14 0 0",
-            "12 0 0",
-            "12 0 0",
-            "0 0 0",
-            "0 0 0",
-            "38 0 0",
-            "38 0 0",
-            "39 0 0",
-            "39 0 0",
-            "0 0 0",
-            "0 0 0",
-            "0 0 0",
-            "0 0 0",
-            "45 0 0",
-            "45 0 0",
+            "54 0 0",
+            "27 0 0",
+            "27 0 0",
             "0 0 0",
             "0 0 0",
             "0 0 0",
             "0 0 0",
             "0 0 0",
             "0 0 0",
-            "0 0 0",
-            "0 0 0",
-            "0 0 0",
-            "0 0 0",
-            "41 0 0",
-            "41 0 0",
-            "8 0 0",
-            "8 0 0",
-            "0 10 0",
             "0 0 10",
+            "0 10 0",
             "0 0 0",
             "0 0 0",
             "0 0 0",
-            "0 0 0"
+            "0 0 0",
+            "0 0 0",
+            "0 0 0",
+            "0 0 0",
+            "0 0 0",
+            "0 0 10",
+            "0 10 0",
+            "0 0 0",
+            "0 0 0",
+            "44 0 0",
+            "44 0 0",
+            "0 0 0",
+            "0 0 0",
+            "35 0 0",
+            "35 0 0",
+            "0 0 0",
+            "0 0 0",
+            "18 0 0",
+            "18 0 0"
         };
 
         // game loop
@@ -235,7 +224,7 @@ class Player
                 int myAnts = int.Parse(inputs[1]); // the amount of your ants on this cell
                 int oppAnts = int.Parse(inputs[2]); // the amount of opponent ants on this cell
 
-                var currentCell = CellsDic[i];
+                var currentCell = CellsDict[i];
                 currentCell.Resources = resources;
                 currentCell.MyAnts = myAnts;
                 currentCell.OppAnts = oppAnts;
@@ -308,7 +297,7 @@ class Player
                 }
                 
                 // Try to harvest richest crystal cell
-                DoFindClosestCellHasMaxCrystalToHarvest(myBaseIndex);
+                DoFindClosestCellHasMaxCrystalToHarvest(myBaseIndex, CellType.Crystal);
                 
                 if (Commands[myBaseIndex].Length > 0)
                 {
@@ -317,6 +306,13 @@ class Player
                 }
                 
                 // Try to harvest richest egg cell
+                DoFindClosestCellHasMaxCrystalToHarvest(myBaseIndex, CellType.Egg);
+                
+                if (Commands[myBaseIndex].Length > 0)
+                {
+                    Print($"-----------------------------------------------------");
+                    continue;
+                }
                 
                 // Try to create a surrounded barrier of enemy bases  
                 
@@ -356,7 +352,7 @@ class Player
 
     public static int CountTotalAntsFromBase(int baseIndex)
     {
-        var baseCell = CellsDic[baseIndex];
+        var baseCell = CellsDict[baseIndex];
         var totalAnts = 0;
         
         List<int> visitedIndexes = new List<int>();
@@ -369,23 +365,31 @@ class Player
 
     public static void CountAnts(int idx, List<int> visitedIndexes, ref int totalAnts, int baseIndex)
     {
-        var cell = CellsDic[idx];
+        var cell = CellsDict[idx];
+        var originTotalAnts = totalAnts;
         
         if (IsFriendly(baseIndex))
             totalAnts += cell.MyAnts;
         else
             totalAnts += cell.OppAnts;
         
-        visitedIndexes.Add(idx);
+        visitedIndexes.Add(idx);  
 
+        // Stop if there is no ant
+        if (originTotalAnts == totalAnts)
+        {
+            return;
+        }
+              
+        // Stop if all neighbours has no ant
         var totalAntsInNeighbours = cell.Neighbours.Sum(idx =>
         {
             if (!visitedIndexes.Contains(idx))
             {
                 if (IsFriendly(baseIndex))
-                    return CellsDic[idx].MyAnts;
+                    return CellsDict[idx].MyAnts;
                 else
-                    return CellsDic[idx].OppAnts;
+                    return CellsDict[idx].OppAnts;
             }
             return 0;
         });
@@ -395,6 +399,7 @@ class Player
             return;
         }
         
+        // Count ants in Neighbours
         foreach (var neighbour in cell.Neighbours)
         {
             if (!visitedIndexes.Contains(neighbour))
@@ -404,7 +409,7 @@ class Player
         }
     }
 
-    public static int GetMyMaxAttackPower(Cell targetCell, int myBaseIndex, LinkedList<Cell> path = null)
+    public static double GetMyMaxAttackPower(Cell targetCell, int myBaseIndex, LinkedList<Cell> path = null)
     {
         LinkedList<Cell> shortestPath;
 
@@ -418,9 +423,9 @@ class Player
         }
         
         var totalAnts = CountTotalAntsFromBase(myBaseIndex);
-        var myAttackPower = totalAnts / (GetDistance(shortestPath) + 1);
+        var myAttackPower = (double) totalAnts / (GetDistance(shortestPath) + 1);
         
-        //Print($"totalAnts {totalAnts} GetDistance(shortestPath) {GetDistance(shortestPath)}");        
+        Print($"--- targetCell {targetCell.Index} - totalAnts {totalAnts} - GetDistance(shortestPath) {GetDistance(shortestPath)}");        
 
         return myAttackPower;
     }
@@ -504,13 +509,16 @@ class Player
         return false;
     }
     
-    public static void DoFindClosestCellHasMaxCrystalToHarvest(int myBaseIndex)
+    public static void DoFindClosestCellHasMaxCrystalToHarvest(int myBaseIndex, CellType cellType)
     {
         var myHarvestingCells = MyHarvestingCells[myBaseIndex];
-        var closestCellHasMaxResourceIndex = FindClosestCellHasMaxResources(myBaseIndex, myBaseIndex, CellType.Crystal);
-        var closestCellHasMaxResource = CellsDic[closestCellHasMaxResourceIndex];
+        var closestCellHasMaxResourceIndex = FindClosestCellHasMaxResources(myBaseIndex, myBaseIndex, cellType);
+
+        if (!CellsDict.ContainsKey(closestCellHasMaxResourceIndex)) return;
         
-        Print($"FindClosestCellHasMaxEgg from {myBaseIndex} is {closestCellHasMaxResourceIndex}");
+        var closestCellHasMaxResource = CellsDict[closestCellHasMaxResourceIndex];
+        
+        Print($"Found ClosestCellHasMaxCrystal to harvest from {myBaseIndex} is {closestCellHasMaxResourceIndex}");
 
         if (closestCellHasMaxResourceIndex > -1)
         {
@@ -518,7 +526,7 @@ class Player
 
             var myAttackPower = GetAttackPower(path, myBaseIndex);
             var oppAttackPower = GetAttackPower(closestCellHasMaxResourceIndex, OppBaseIndexes[0]);
-            var currentResource = CellsDic[closestCellHasMaxResourceIndex].Resources;
+            var currentResource = CellsDict[closestCellHasMaxResourceIndex].Resources;
                     
             Print($"myAttackPower {myAttackPower} oppAttackPower {oppAttackPower}");
             Print($"closestCellHasMaxResourceIndex {closestCellHasMaxResourceIndex} currentResource {currentResource}");
@@ -547,15 +555,15 @@ class Player
             return;
         }
         
-        // Ignore when already have too many ants :) 
-        if (CheckIfHaveTooMuchAnts(myBaseIndex))
+        // Ignore when already have too many ants and low egg left :) 
+        if (CheckIfHaveTooMuchAnts(myBaseIndex) && IsLowEgg(LowEggRatio))
         {
             return;
         }
 
         var myHarvestingCells = MyHarvestingCells[myBaseIndex];
         var closestCellHasMaxEggIndex = FindClosestCellHasMaxResources(myBaseIndex, myBaseIndex, CellType.Egg);
-        var closestCellHasMaxEgg = CellsDic[closestCellHasMaxEggIndex];
+        var closestCellHasMaxEgg = CellsDict[closestCellHasMaxEggIndex];
         Print($"FindClosestCellHasMaxEgg from {myBaseIndex} is {closestCellHasMaxEggIndex}");
 
         if (closestCellHasMaxEggIndex > -1)
@@ -564,7 +572,7 @@ class Player
 
             var myAttackPower = GetAttackPower(path, myBaseIndex);
             var oppAttackPower = GetAttackPower(closestCellHasMaxEggIndex, OppBaseIndexes[0]);
-            var currentResource = CellsDic[closestCellHasMaxEggIndex].Resources;
+            var currentResource = CellsDict[closestCellHasMaxEggIndex].Resources;
                     
             Print($"myAttackPower {myAttackPower} oppAttackPower {oppAttackPower}");
             Print($"closestCellHasMaxEggIndex {closestCellHasMaxEggIndex} currentResource {currentResource}");
@@ -620,8 +628,14 @@ class Player
 
     public static bool IsLowCrystal(double ratio)
     {
-        Print($"Check IsLowCrystal: {TotalCrystals <= (TotalInitialCrystals * ratio)}");
+        //Print($"Check IsLowCrystal: {TotalCrystals <= (TotalInitialCrystals * ratio)}");
         return TotalCrystals <= (TotalInitialCrystals * ratio);
+    }
+    
+    public static bool IsLowEgg(double ratio)
+    {
+        //Print($"Check IsLowEgg: {TotalCrystals <= (TotalInitialCrystals * ratio)}");
+        return TotalEggs <= (TotalInitialEggs * ratio);
     }
 
     public static void DoCheckIfHarvesting(int myBaseIndex, bool isAttack)
@@ -647,8 +661,13 @@ class Player
             // Check if should stop harvesting eggs
             if (!isAttack && IsEgg(myHarvestingCell.Type))
             {
-                if (IsLowCrystal(LowCrystalRatio) || CheckIfHaveTooMuchAnts(myBaseIndex))
+                var isTooMuchAnts = CheckIfHaveTooMuchAnts(myBaseIndex);
+
+                if (IsLowCrystal(LowCrystalRatio) 
+                    || (CheckIfHaveTooMuchAnts(myBaseIndex) && IsLowEgg(LowEggRatio)))
                 {
+                    Print($"Stop harvesting {myHarvestingCell.Index} because IsLowCrystal: {IsLowCrystal(LowCrystalRatio)} - TooMuchAnts {isTooMuchAnts} - IsLowEgg {IsLowEgg(LowEggRatio)}");
+                    
                     canNotHarvestCells.Add(myHarvestingCell);
                     continue;
                 }
@@ -699,44 +718,44 @@ class Player
         return command;
     }
 
-    public static int FindClosestCellHasMaxResources(int fromIdx, int playerIdx, CellType type)
+    public static List<Cell> SortByMaxHarvestProductivity(List<Cell> cells, int myBaseIndex)
+    {
+        return cells.OrderByDescending(cell =>
+        {
+            var myMaxAttackPower = GetMyMaxAttackPower(cell, myBaseIndex);
+            
+            Print($"myMaxAttackPower {cell.Index}: {myMaxAttackPower}");
+            
+            return myMaxAttackPower;
+        })
+            .ThenByDescending(cell => cell.Resources).ToList();
+    }
+
+    public static int FindClosestCellHasMaxResources(int fromIdx, int myBaseIndex, CellType type)
     {
         List<Cell> resourceCells;
 
         if (IsEgg(type))
         {
-            resourceCells = HasEggCells.OrderByDescending(cell => cell.Resources).ToList();
+            resourceCells = SortByMaxHarvestProductivity(HasEggCells, myBaseIndex);
         }
         else
         {
-            resourceCells = HasCrystalCells.OrderByDescending(cell => cell.Resources).ToList();
+            resourceCells = SortByMaxHarvestProductivity(HasCrystalCells, myBaseIndex);
         }
-        
-        // Sort Eggs DESC
-        resourceCells.Sort((cell1, cell2) => cell2.Resources.CompareTo(cell1.Resources));
-        
-        var maxResource = int.MinValue;
-        var minDistance = int.MaxValue;
+
         var desiredIndex = -1;
         
         foreach (var resourceCell in resourceCells)
         {
-            if (maxResource <= resourceCell.Resources)
-            {
-                var path = FindShortestPath(fromIdx, resourceCell.Index, playerIdx);
-                var distance = GetDistance(path);
+            var path = FindShortestPath(fromIdx, resourceCell.Index, myBaseIndex);
+            var distance = GetDistance(path);
 
-                // Check if enough ants to go there
-                if (CheckIfEnoughAntsToGo(path, playerIdx) && minDistance > distance)
-                {
-                    desiredIndex = resourceCell.Index;
-                    minDistance = distance;
-                }
-
-                maxResource = resourceCell.Resources;
-            }
-            else
+            // Check if enough ants to go there
+            if (CheckIfEnoughAntsToGo(path, myBaseIndex))
             {
+                desiredIndex = resourceCell.Index;
+
                 break;
             }
         }
@@ -881,7 +900,7 @@ class Player
 
     public static List<int> GetNeighbours(int index)
     {
-        return CellsDic[index].Neighbours;
+        return CellsDict[index].Neighbours;
     }
 
     public static LinkedList<Cell> FindShortestPath(int a, int b)
@@ -897,7 +916,7 @@ class Player
         result = neighbours.OrderBy(idx =>
             {
                 // Sort by type: egg > crystal > empty
-                var type = CellsDic[idx].Type;
+                var type = CellsDict[idx].Type;
                 if (IsEgg(type))
                 {
                     return 0;
@@ -909,15 +928,15 @@ class Player
 
                 return 2;
             })
-            .ThenBy(idx => CellsDic[idx].Resources) // Sort by resources
+            .ThenBy(idx => CellsDict[idx].Resources) // Sort by resources
             .ThenBy(idx => // Sort by ants
             {
                 if (IsFriendly(playerIdx))
                 {
-                    return CellsDic[idx].MyAnts;
+                    return CellsDict[idx].MyAnts;
                 }
 
-                return CellsDic[idx].OppAnts;
+                return CellsDict[idx].OppAnts;
             })
             .ThenBy(idx => idx).ToList(); // Sort by id
 
@@ -956,7 +975,7 @@ class Player
             }
             foreach (int neighbour in neighbours)
             {
-                Cell cell = CellsDic[neighbour];
+                Cell cell = CellsDict[neighbour];
                 bool visited = prev.ContainsKey(neighbour);
                 if (cell.Index >= 0 && !visited)
                 {
@@ -976,7 +995,7 @@ class Player
         int? current = b;
         while (current != null)
         {
-            path.AddFirst(CellsDic[current.Value]);
+            path.AddFirst(CellsDict[current.Value]);
             current = prev[current.Value];
         }
 
@@ -1006,9 +1025,9 @@ class Player
             {
                 // Order by amount of friendly ants, then beacon strength, then id of cell
                 if (MyBaseIndexes.Contains(playerIdx.Value)) 
-                    neighbours = neighbours.OrderBy(idx => CellsDic[idx].MyAnts).ThenBy(idx => idx).ToList();
+                    neighbours = neighbours.OrderBy(idx => CellsDict[idx].MyAnts).ThenBy(idx => idx).ToList();
                 else 
-                    neighbours = neighbours.OrderBy(idx => CellsDic[idx].OppAnts).ThenBy(idx => idx).ToList();
+                    neighbours = neighbours.OrderBy(idx => CellsDict[idx].OppAnts).ThenBy(idx => idx).ToList();
             }
             else
             {
@@ -1017,7 +1036,7 @@ class Player
             }
             foreach (int neighbour in neighbours)
             {
-                Cell cell = CellsDic[neighbour];
+                Cell cell = CellsDict[neighbour];
                 bool visited = prev.ContainsKey(neighbour);
                 if (cell.Index >= 0 && !visited)
                 {
@@ -1037,7 +1056,7 @@ class Player
         int? current = b;
         while (current != null)
         {
-            path.AddFirst(CellsDic[current.Value]);
+            path.AddFirst(CellsDict[current.Value]);
             current = prev[current.Value];
         }
 
@@ -1084,9 +1103,9 @@ class Player
     public static int GetAnts(int cellIdx, int playerIdx)
     {
         if (IsFriendly(playerIdx))
-            return CellsDic[cellIdx].MyAnts;
+            return CellsDict[cellIdx].MyAnts;
         
-        return CellsDic[cellIdx].OppAnts;
+        return CellsDict[cellIdx].OppAnts;
     }
     
     public static int GetAttackPower(int cellIdx, int playerIdx)
@@ -1146,10 +1165,10 @@ class Player
         // Dijkstra's algorithm based on the tuple (maxValue, minDist)
 
         // TODO: optim: pre-compute all distances from each cell to the end
-        int[] maxPathValues = new int[CellsDic.Count];
-        int[] prev = new int[CellsDic.Count];
-        int[] distanceFromStart = new int[CellsDic.Count];
-        bool[] visited = new bool[CellsDic.Count];
+        int[] maxPathValues = new int[CellsDict.Count];
+        int[] prev = new int[CellsDict.Count];
+        int[] distanceFromStart = new int[CellsDict.Count];
+        bool[] visited = new bool[CellsDict.Count];
         Array.Fill(maxPathValues, int.MinValue);
         Array.Fill(prev, -1);
         Array.Fill(visited, false);
@@ -1198,7 +1217,7 @@ class Player
             // Update the max values of the neighbors
             //Print($"CellsDic[currentIndex].Neighbours {CellsDic[currentIndex].Neighbours.Count}");
             
-            foreach (int neighborIndex in CellsDic[currentIndex].Neighbours) 
+            foreach (int neighborIndex in CellsDict[currentIndex].Neighbours) 
             {
                 int neighborAnts = GetAnts(neighborIndex, playerIdx);
                 //Print($"neighborAnts {neighborAnts}");
@@ -1245,7 +1264,7 @@ class Player
         int index = end;
         //Print($"Compute the path from start to end {end}");
         while (index != -1) {
-            path.AddFirst(CellsDic[index]);
+            path.AddFirst(CellsDict[index]);
             //Print($"path.AddFirst {index}");
             index = prev[index];
         }
