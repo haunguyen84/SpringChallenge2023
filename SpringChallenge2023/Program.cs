@@ -49,9 +49,9 @@ class Player
     public static Dictionary<int, string> Commands = new Dictionary<int, string>();
     
     // Game settings
-    public static double LowCrystalRatio = 0.5;
+    public static double LowCrystalRatio = 0.7;
     public static double LowEggRatio = 0.5;
-    public static double HaveManyAntsRatio = 1.7;
+    public static double HaveManyAntsRatio = 1.2;
 
     static void Main(string[] args)
     {
@@ -273,6 +273,19 @@ class Player
                     continue;
                 }
                 
+                // Find a resource cell being harvested by enemy 
+                // if (CountTotalAntsFromBase(myBaseIndex) >= TotalInitialEggs / 5)
+                // {
+                //     Print($"First attack");
+                //     DoFindMaxCrystalCellHarvestingByEnemyToAttack(myBaseIndex);
+                //
+                //     if (Commands[myBaseIndex].Length > 0)
+                //     {
+                //         Print($"-----------------------------------------------------");
+                //         continue;
+                //     }
+                // }
+
                 // Find a new cell to harvest eggs
                 // Ignore if low crystal or already had too many ants :) 
                 // Should extend lines to other eggs if there are already many ants in base
@@ -284,8 +297,8 @@ class Player
                     continue;
                 }
                 
-                // Find a resource cell being harvested by enemy 
-                DoFindMaxCrystalCellHarvestingByEnemyToAttack(myBaseIndex);                      
+                // Find a resource cell being harvested by enemy to attack
+                DoFindMaxCrystalCellsHarvestingByEnemyToAttack(myBaseIndex);                      
                 
                 if (Commands[myBaseIndex].Length > 0)
                 {
@@ -347,6 +360,18 @@ class Player
         }
     }
 
+    public static void DoFindMaxCrystalCellsHarvestingByEnemyToAttack(int myBaseIndex)
+    {
+        var totalAnts = CountTotalAntsFromBase(myBaseIndex);
+        var limitTarget = (int)Math.Min(totalAnts / 10, HasCrystalCells.Count);
+        
+        for (int i = 0; i < limitTarget; i++)
+        {            
+            Print($"***** Attack round {i}");
+            DoFindMaxCrystalCellHarvestingByEnemyToAttack(myBaseIndex);
+        }
+    }
+
     public static void DoFindMaxCrystalCellHarvestingByEnemyToAttack(int myBaseIndex)
     {
         Print($"Start DoFindMaxCrystalCellHarvestingByEnemyToAttack");
@@ -362,6 +387,8 @@ class Player
         {
             Commands[myBaseIndex] = BuildBeaconCommand(attackPath);
             MyAttackingCells[myBaseIndex].Add(attackCell);
+            
+            DoExtendHarvestingPathToNeighborsHasResource(attackCell, myBaseIndex);
             
             Print($"attackPath {Commands[myBaseIndex]}");
         }
@@ -449,19 +476,47 @@ class Player
         return myAttackPower;
     }
 
+    public static int GetMinDistanceFromExistingPath(int toIdx, int myBaseIndex)
+    {
+        var minDistance = int.MaxValue;
+        
+        foreach (var cell in CellsDict.Values)
+        {
+            var ants = IsFriendly(myBaseIndex) ? cell.MyAnts : cell.OppAnts;
+            if (ants > 0)
+            {
+                var distance = GetDistance(cell.Index, toIdx);
+
+                if (minDistance > distance)
+                {
+                    minDistance = distance;
+                }
+            }
+        }
+
+        return minDistance;
+    }
+
     public static List<Cell> SortResourceCellsByMyMaxAttackPowerDesc(List<Cell> cells, int myBaseIndex)
     {
-        var result = cells.OrderByDescending(cell =>
-        {
-            var oppAttackPower = GetAttackPower(cell.Index, OppBaseIndexes[0]);
-            var shorestDistance = GetDistance(cell.Index, myBaseIndex);
+        var result = cells.Where(cell =>
+            {
+                var harvestingPathsCount = !cell.HarvestingPaths.ContainsKey(myBaseIndex) ? 0 : cell.HarvestingPaths[myBaseIndex].Count;
+                var attackingPathsCount = !cell.AttackingPaths.ContainsKey(myBaseIndex) ? 0 : cell.AttackingPaths[myBaseIndex].Count;
+                
+                return harvestingPathsCount == 0 && attackingPathsCount == 0;
+            })
+            .OrderByDescending(cell =>
+            {
+                var oppAttackPower = GetAttackPower(cell.Index, OppBaseIndexes[0]);            
+                var minDistance = GetMinDistanceFromExistingPath(cell.Index, myBaseIndex);            
 
-            return cell.Resources * oppAttackPower / shorestDistance;
-        })
-        .ThenByDescending(cell =>
-        {
-            return GetMyMaxAttackPower(cell, myBaseIndex);
-        });
+                return cell.Resources * Math.Abs(oppAttackPower) / Math.Max(1, minDistance);
+            })
+            .ThenByDescending(cell =>
+            {
+                return GetMyMaxAttackPower(cell, myBaseIndex);
+            });
 
         return result.ToList();
     }
@@ -469,29 +524,33 @@ class Player
     public static Cell FindMaxCrystalCellHarvestingByEnemyToAttack(int myBaseIndex)
     {
         // Ignore cells NOT being harvested by enemy
-        var cellsBeingHarvestedByEnemy = HasCrystalCells.Where(cell => cell.OppAnts > 0).ToList();
+        var cellsBeingHarvestedByEnemy = HasCrystalCells; //.Where(cell => cell.OppAnts > 0).ToList();
         
         // Sort HasCrystalCells by myMaxAttackPower
         SortResourceCellsByMyMaxAttackPowerDesc(cellsBeingHarvestedByEnemy, myBaseIndex);
+
+        Print($"cellsBeingHarvestedByEnemy {cellsBeingHarvestedByEnemy.Count}");
         
         foreach (var crystalCell in cellsBeingHarvestedByEnemy)
         {
+            Print($"---Start checking crystalCell {crystalCell.Index}---");
+            
             //  Ignore if being attacked
             if (MyAttackingCells[myBaseIndex].Contains(crystalCell))
             {
                 continue;
             }            
             
-            // Checking attack power
-            Print($"---Start checking crystalCell {crystalCell.Index}---");
+            // Checking attack power            
             var shortestPath = FindShortestPathHavingMaxResources(myBaseIndex, crystalCell.Index, myBaseIndex);
             var oppAttackPower = GetAttackPower(crystalCell.Index, OppBaseIndexes[0]);
-            var myMaxAttackPower = GetMyMaxAttackPower(crystalCell, myBaseIndex, shortestPath);            
+            var myMaxAttackPower = GetMyMaxAttackPower(crystalCell, myBaseIndex, shortestPath);
+            var minDistance = GetMinDistanceFromExistingPath(crystalCell.Index, myBaseIndex);
             
             Print($"myMaxAttackPower {myMaxAttackPower} oppAttackPower {oppAttackPower}");
 
             // Check if can attack
-            if (myMaxAttackPower > oppAttackPower)
+            if (myMaxAttackPower > oppAttackPower + minDistance)
             {
                 if (!crystalCell.AttackingPaths.ContainsKey(myBaseIndex))
                 {
@@ -622,8 +681,11 @@ class Player
 
     public static void DoFindClosestCellsHasMaxEggToHarvest(int myBaseIndex)
     {
-        for (int i = 0; i < HasEggCells.Count; i++)
-        {
+        var totalAnts = CountTotalAntsFromBase(myBaseIndex);
+        var limitTarget = (int)Math.Min(totalAnts / 4, HasEggCells.Count);
+        
+        for (int i = 0; i < limitTarget; i++)
+        {            
             DoFindClosestCellHasMaxEggToHarvest(myBaseIndex);
         }
     }
@@ -703,10 +765,12 @@ class Player
             var oppAttackPower = GetAttackPower(myHarvestingCell.Index, OppBaseIndexes[0]);
             var currentResource = myHarvestingCell.Resources;
 
+            var minDistance = GetMinDistanceFromExistingPath(myHarvestingCell.Index, myBaseIndex);
+
             Print($"myAttackPower {myAttackPower} oppAttackPower {oppAttackPower}");
             Print($"myHarvestingCell {myHarvestingCell.Index} currentResource {currentResource}");
 
-            if (myAttackPower >= oppAttackPower && currentResource > 0)
+            if (myAttackPower >= oppAttackPower + minDistance && currentResource > 0)
             {
                 Print($"Harvesting cell: {myHarvestingCell.Index}");
                 Commands[myBaseIndex] += BuildBeaconCommand(paths[myBaseIndex]);
@@ -819,10 +883,6 @@ class Player
     {
         return cells.Where(cell =>
             {
-                if (!cell.HarvestingPaths.ContainsKey(myBaseIndex))
-                {
-                    
-                }
                 var harvestingPathsCount = !cell.HarvestingPaths.ContainsKey(myBaseIndex) ? 0 : cell.HarvestingPaths[myBaseIndex].Count;
                 var attackingPathsCount = !cell.AttackingPaths.ContainsKey(myBaseIndex) ? 0 : cell.AttackingPaths[myBaseIndex].Count;
                 
